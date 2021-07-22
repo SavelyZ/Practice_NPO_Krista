@@ -23,29 +23,29 @@ public class Main {
         List<MovingGroup> movingGroups = new ArrayList<>();
         // Место для Вашего кода.
         try {
-            List<Planet> myPlanets = round.getOwnPlanets();
-            List<Planet> myPlanetstoDefense = new ArrayList();
+            List<Planet> OwnPlanets = round.getOwnPlanets();
+            List<Planet> OwnPlanetstoDefense = new ArrayList();
             boolean flag;
             int ii = 0;
-            Planet nearestPlanet = null;
+            Planet planetIsNearOfAll = null;
             if (round.getCurrentStep() < 4) {
                 if (!round.getNoMansPlanets().isEmpty()) {
                     Planet home_first = getHomePlanet(round);
-                    List<Planet> noMNGP = getNoMnPlanets(round);
+                    List<Planet> FreePlanets = getNoMnPlanets(round);
 
-                    if (!noMNGP.isEmpty()) {
+                    if (!FreePlanets.isEmpty()) {
 
-                        noMNGP.sort((o1, o2) -> {
+                        FreePlanets.sort((o1, o2) -> {
                             return round.getDistanceMap()[home_first.getId()][o1.getId()] - round.getDistanceMap()[home_first.getId()][o2.getId()];
                         });
 
 
-                        for (int i = 0; i < noMNGP.size(); i++) {
-                            if (home_first.getPopulation() > noMNGP.get(i).getPopulation() + 3) {
+                        for (int i = 0; i < FreePlanets.size(); i++) {
+                            if (home_first.getPopulation() > FreePlanets.get(i).getPopulation() + 3) {
                                 MovingGroup group = new MovingGroup();
                                 group.setFrom(home_first.getId());
-                                group.setTo(noMNGP.get(i).getId());
-                                group.setCount(noMNGP.get(i).getPopulation() + 3);
+                                group.setTo(FreePlanets.get(i).getId());
+                                group.setCount(FreePlanets.get(i).getPopulation() + 3);
 
                                 movingGroups.add(group);
                             }
@@ -55,38 +55,38 @@ public class Main {
             } else
                 try {
                     List<MovingGroup> enemiesAttack = round.getAdversarysMovingGroups();
-                    Planet planetISAttacked;
-                    List<Planet> myPlanet2 = round.getOwnPlanets();
+                    Planet warringToAttakPlanet;
+                    List<Planet> ownPlanets_ = round.getOwnPlanets();
                     List<MovingGroup> myGroupstoDefense = round.getOwnMovingGroups();
                     boolean flag1 = true;
                     for (int j = 0; j < enemiesAttack.size(); j++) {
-                        planetISAttacked = round.getPlanets().get(enemiesAttack.get(j).getTo());
-                        if ((planetISAttacked.getOwnerTeam() == round.getTeamId()) &&
-                                (planetISAttacked.getPopulation() + enemiesAttack.get(j).getStepsLeft() * planetISAttacked.getReproduction() <= enemiesAttack.get(j).getCount())) {
-                            Planet planetToAttack1 = planetISAttacked;
+                        warringToAttakPlanet = round.getPlanets().get(enemiesAttack.get(j).getTo());
+                        if ((warringToAttakPlanet.getOwnerTeam() == round.getTeamId()) &&
+                                (warringToAttakPlanet.getPopulation() + enemiesAttack.get(j).getStepsLeft() * warringToAttakPlanet.getReproduction() <= enemiesAttack.get(j).getCount())) {
+                            Planet planetToAttack1 = warringToAttakPlanet;
                             for (MovingGroup element : myGroupstoDefense)
-                                if (element.getTo() == planetISAttacked.getId())
+                                if (element.getTo() == warringToAttakPlanet.getId())
                                     flag1 = false;
 
                             if (flag1) {
                                 boolean flag2 = true;
 
-                                myPlanet2.sort((o1, o2) -> {
+                                ownPlanets_.sort((o1, o2) -> {
                                     return round.getDistanceMap()[o1.getId()][planetToAttack1.getId()] - round.getDistanceMap()[o2.getId()][planetToAttack1.getId()];
                                 });
 
                                 //отправляю помощь с ближайшей планеты, которая может помочь
-                                for (Planet element : myPlanet2) {
+                                for (Planet element : ownPlanets_) {
                                     if (flag2) {
                                         if ((element.getPopulation() > enemiesAttack.get(j).getCount())) {
                                             MovingGroup group = new MovingGroup();
                                             group.setFrom(element.getId());
-                                            group.setTo(planetISAttacked.getId());
+                                            group.setTo(warringToAttakPlanet.getId());
                                             group.setCount(enemiesAttack.get(j).getCount());
                                             movingGroups.add(group);
                                             flag2 = false;
                                             round.getPlanets().get(element.getId()).setPopulation(round.getPlanets().get(element.getId()).getPopulation() - enemiesAttack.get(j).getCount());
-                                            myPlanetstoDefense.add(planetISAttacked);
+                                            OwnPlanetstoDefense.add(warringToAttakPlanet);
                                         }
                                     }
                                 }
@@ -106,34 +106,34 @@ public class Main {
                         int k = 0;
 
                         Planet planetToAttack = round.getPlanets().get(i);
-                        myPlanets.sort((o1, o2) -> {
+                        OwnPlanets.sort((o1, o2) -> {
                             return round.getDistanceMap()[o1.getId()][planetToAttack.getId()] - round.getDistanceMap()[o2.getId()][planetToAttack.getId()];
                         });
 
                         int j = 0, countSent = 1;
 
-                        while ((j < myPlanets.size())) {
-                            if (!myPlanetstoDefense.contains(myPlanets.get(j))) {
-                                if ((round.getPlanets().get(i).getOwnerTeam() == -1) && (myPlanets.get(j).getPopulation() > round.getPlanets().get(i).getPopulation() + 1) && (!sentToNoMan.contains(round.getPlanets().get(i)))) {
+                        while ((j < OwnPlanets.size())) {
+                            if (!OwnPlanetstoDefense.contains(OwnPlanets.get(j))) {
+                                if ((round.getPlanets().get(i).getOwnerTeam() == -1) && (OwnPlanets.get(j).getPopulation() > round.getPlanets().get(i).getPopulation() + 1) && (!sentToNoMan.contains(round.getPlanets().get(i)))) {
                                     MovingGroup group = new MovingGroup();
-                                    group.setFrom(myPlanets.get(j).getId());
+                                    group.setFrom(OwnPlanets.get(j).getId());
                                     group.setTo(round.getPlanets().get(i).getId());
                                     group.setCount(round.getPlanets().get(i).getPopulation() + 1);
-                                    myPlanets.get(j).setPopulation(myPlanets.get(j).getPopulation() - round.getPlanets().get(i).getPopulation() - 1);
+                                    OwnPlanets.get(j).setPopulation(OwnPlanets.get(j).getPopulation() - round.getPlanets().get(i).getPopulation() - 1);
                                     sentToNoMan.add(round.getPlanets().get(i));
                                     movingGroups.add(group);
-                                } else if ((myPlanets.get(j).getPopulation() >
-                                        (round.getPlanets().get(i).getPopulation() / countSent + round.getDistanceMap()[round.getPlanets().get(i).getId()][myPlanets.get(j).getId() / countSent]) + countSent)) {
+                                } else if ((OwnPlanets.get(j).getPopulation() >
+                                        (round.getPlanets().get(i).getPopulation() / countSent + round.getDistanceMap()[round.getPlanets().get(i).getId()][OwnPlanets.get(j).getId() / countSent]) + countSent)) {
 
                                     MovingGroup group = new MovingGroup();
-                                    group.setFrom(myPlanets.get(j).getId());
+                                    group.setFrom(OwnPlanets.get(j).getId());
                                     group.setTo(round.getPlanets().get(i).getId());
 
-                                    group.setCount(round.getPlanets().get(i).getPopulation() / countSent + round.getDistanceMap()[round.getPlanets().get(i).getId()][myPlanets.get(j).getId() / countSent] + countSent);
+                                    group.setCount(round.getPlanets().get(i).getPopulation() / countSent + round.getDistanceMap()[round.getPlanets().get(i).getId()][OwnPlanets.get(j).getId() / countSent] + countSent);
 
                                     movingGroups.add(group);
 
-                                    myPlanets.get(j).setPopulation(myPlanets.get(j).getPopulation() - (round.getPlanets().get(i).getPopulation() / countSent + /*round.getPlanets().get(i).getReproduction() **/ round.getDistanceMap()[round.getPlanets().get(i).getId()][myPlanets.get(j).getId() / countSent] + countSent));
+                                    OwnPlanets.get(j).setPopulation(OwnPlanets.get(j).getPopulation() - (round.getPlanets().get(i).getPopulation() / countSent + /*round.getPlanets().get(i).getReproduction() **/ round.getDistanceMap()[round.getPlanets().get(i).getId()][OwnPlanets.get(j).getId() / countSent] + countSent));
                                     countSent++;
                                 }
                             }
@@ -143,30 +143,30 @@ public class Main {
                         // }
                     } catch (NullPointerException e) {
                         int j = 0, countSent = 1;
-                        while ((f) && (j < myPlanets.size())) {
-                            if (!myPlanetstoDefense.contains(myPlanets.get(j))) {
-                                if ((round.getPlanets().get(i).getOwnerTeam() == -1) && (myPlanets.get(j).getPopulation() > round.getPlanets().get(i).getPopulation() + 1) && (!sentToNoMan.contains(round.getPlanets().get(i)))) {
+                        while ((f) && (j < OwnPlanets.size())) {
+                            if (!OwnPlanetstoDefense.contains(OwnPlanets.get(j))) {
+                                if ((round.getPlanets().get(i).getOwnerTeam() == -1) && (OwnPlanets.get(j).getPopulation() > round.getPlanets().get(i).getPopulation() + 1) && (!sentToNoMan.contains(round.getPlanets().get(i)))) {
                                     MovingGroup group = new MovingGroup();
-                                    group.setFrom(myPlanets.get(j).getId());
+                                    group.setFrom(OwnPlanets.get(j).getId());
                                     group.setTo(round.getPlanets().get(i).getId());
                                     group.setCount(round.getPlanets().get(i).getPopulation() + 1);
 
                                     sentToNoMan.add(round.getPlanets().get(i));
 
                                     movingGroups.add(group);
-                                    myPlanets.get(j).setPopulation(myPlanets.get(j).getPopulation() - round.getPlanets().get(i).getPopulation() - 1);
-                                } else if ((myPlanets.get(j).getPopulation() >
-                                        (round.getPlanets().get(i).getPopulation() / countSent + round.getDistanceMap()[round.getPlanets().get(i).getId()][myPlanets.get(j).getId() / countSent]) + countSent)) {
+                                    OwnPlanets.get(j).setPopulation(OwnPlanets.get(j).getPopulation() - round.getPlanets().get(i).getPopulation() - 1);
+                                } else if ((OwnPlanets.get(j).getPopulation() >
+                                        (round.getPlanets().get(i).getPopulation() / countSent + round.getDistanceMap()[round.getPlanets().get(i).getId()][OwnPlanets.get(j).getId() / countSent]) + countSent)) {
 
                                     MovingGroup group = new MovingGroup();
-                                    group.setFrom(myPlanets.get(j).getId());
+                                    group.setFrom(OwnPlanets.get(j).getId());
                                     group.setTo(round.getPlanets().get(i).getId());
 
-                                    group.setCount(round.getPlanets().get(i).getPopulation() / countSent + round.getDistanceMap()[round.getPlanets().get(i).getId()][myPlanets.get(j).getId() / countSent] + countSent);
+                                    group.setCount(round.getPlanets().get(i).getPopulation() / countSent + round.getDistanceMap()[round.getPlanets().get(i).getId()][OwnPlanets.get(j).getId() / countSent] + countSent);
 
                                     movingGroups.add(group);
 
-                                    myPlanets.get(j).setPopulation(myPlanets.get(j).getPopulation() - (round.getPlanets().get(i).getPopulation() / countSent + /*round.getPlanets().get(i).getReproduction() **/ round.getDistanceMap()[round.getPlanets().get(i).getId()][myPlanets.get(j).getId() / countSent] + countSent));
+                                    OwnPlanets.get(j).setPopulation(OwnPlanets.get(j).getPopulation() - (round.getPlanets().get(i).getPopulation() / countSent + /*round.getPlanets().get(i).getReproduction() **/ round.getDistanceMap()[round.getPlanets().get(i).getId()][OwnPlanets.get(j).getId() / countSent] + countSent));
                                     countSent++;
                                 }
                             }
